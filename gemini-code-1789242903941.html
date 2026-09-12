@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <!--
+    ================================================================================
+    DEV-SYSTEM-PROMPT & ARBEITSANWEISUNGEN
+    ================================================================================
+    1. ARCHITEKTUR: Single-File HTML5, Tailwind CSS (CDN), Vanilla JS.
+    2. STATUS: Äußere Ring-Umrandung (stroke) der Drehräder auf Schwarz umgestellt.
+    ================================================================================
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Hydraulikschlauch Verdrehwinkel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#005691">
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 p-3 md:p-6 flex flex-col justify-between">
+
+  <div class="max-w-3xl mx-auto space-y-4 w-full">
+    
+    <!-- Verschmolzene Box: Bildgalerie & Live-Werte -->
+    <section class="bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-200 flex flex-col items-center p-3 gap-3">
+      <!-- Bildgalerie -->
+      <div class="inline-flex w-auto bg-slate-50 rounded-xl overflow-hidden">
+        <!-- Anschluss A (Links) -->
+        <div class="h-[180px] w-[180px] flex items-center justify-center overflow-hidden bg-white">
+          <img id="img-a" src="" alt="Anschluss A" class="h-full object-contain select-none block m-0 p-0">
+        </div>
+        <!-- Anschluss B (Rechts) -->
+        <div class="h-[180px] w-[180px] flex items-center justify-center overflow-hidden bg-white">
+          <img id="img-b" src="" alt="Anschluss B" class="h-full object-contain select-none block m-0 p-0">
+        </div>
+      </div>
+
+      <!-- Live-Werte -->
+      <div class="w-full flex items-center justify-around border-t border-slate-100 pt-2 px-2">
+        <div class="flex flex-col items-center">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Anschluss A</span>
+          <span id="out-a" class="text-lg font-extrabold text-slate-400 font-mono w-16 text-center">0°</span>
+        </div>
+        <div class="h-8 w-px bg-slate-200"></div>
+        <div class="flex flex-col items-center">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Anschluss B</span>
+          <span id="out-b" class="text-lg font-extrabold text-orange-600 font-mono w-16 text-center">0°</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Eingabe- und Steuerungsbereich -->
+    <section class="space-y-4 flex flex-col">
+      
+      <!-- Anschluss A Box (Links: Drehrad links, Buttons rechts daneben übereinander) -->
+      <div class="bg-white p-2.5 rounded-2xl shadow-sm border-l-8 border-[#005691] inline-flex items-center gap-2.5 mr-auto w-max">
+        <div class="dial-wrapper w-[130px] h-[130px] touch-none cursor-pointer relative transition-opacity duration-200" id="dial-a" data-anschluss="a">
+          <svg viewBox="0 0 200 200" class="w-full h-full select-none">
+            <circle cx="100" cy="100" r="85" fill="#f8fafc" stroke="#000000" stroke-width="4"/>
+            <circle cx="100" cy="185" r="4" fill="#000000"/><text x="100" y="172" font-size="28" font-weight="bold" text-anchor="middle" fill="#000000">0</text>
+            <circle cx="160" cy="160" r="4" fill="#000000"/><text x="138" y="152" font-size="28" font-weight="bold" text-anchor="middle" fill="#000000">45</text>
+            <circle cx="185" cy="100" r="4" fill="#000000"/><text x="155" y="110" font-size="28" font-weight="bold" text-anchor="middle" fill="#000000">90</text>
+            <circle cx="160" cy="40" r="4" fill="#000000"/><text x="138" y="70" font-size="28" font-weight="bold" text-anchor="middle" fill="#000000">135</text>
+            <circle cx="100" cy="15" r="4" fill="#000000"/><text x="100" y="48" font-size="28" font-weight="bold" text-anchor="middle" fill="#000000">180</text>
+            <circle cx="40" cy="40" r="4" fill="#000000"/><text x="62" y="70" font-size="28" font-weight="bold" text-anchor="middle" fill="#000000">225</text>
+            <circle cx="15" cy="100" r="4" fill="#000000"/><text x="45" y="110" font-size="28" font-weight="bold" text-anchor="middle" fill="#000000">270</text>
+            <circle cx="40" cy="160" r="4" fill="#000000"/><text x="62" y="152" font-size="28" font-weight="bold" text-anchor="middle" fill="#000000">315</text>
+            <line id="pointer-a" x1="100" y1="100" x2="100" y2="185" stroke="#005691" stroke-width="6" stroke-linecap="round"/>
+            <circle cx="100" cy="100" r="7" fill="#1e293b"/>
+          </svg>
+        </div>
+        <div class="flex flex-col bg-slate-100 p-1 rounded-xl w-28 text-xs font-semibold gap-1 justify-center h-[130px]">
+          <button id="type-a-gerade" onclick="setAnschlussAType('gerade')" class="flex-1 py-1.5 px-2 rounded-lg bg-[#005691] text-white transition-all text-center flex items-center justify-center">gerade</button>
+          <button id="type-a-90" onclick="setAnschlussAType('90')" class="flex-1 py-1.5 px-2 rounded-lg text-slate-600 hover:text-slate-900 transition-all text-center flex items-center justify-center">45° | 90°</button>
+        </div>
+      </div>
+
+      <!-- Anschluss B Box (Rechts: Nur Drehrad) -->
+      <div class="bg-white p-2.5 rounded-2xl shadow-sm border-l-8 border-orange-500 inline-flex flex-col items-center ml-auto w-max">
+        <div class="dial-wrapper w-[130px] h-[130px] touch-none cursor-pointer relative" id="dial-b" data-anschluss="b">
+          <svg viewBox="0 0 200 200" class="w-full h-full select-none">
+            <circle cx="100" cy="100" r="85" fill="#f8fafc" stroke="#000000" stroke-width="4"/>
+            <circle cx="100" cy="185" r="4" fill="#000000"/><text x="100" y="172" font-size="28" font-weight="bold" text-anchor="middle" fill="#000000">0</text>
+            <circle cx="160" cy="160" r="4" fill="#000000"/><text x="138" y="152" font-size="28" font-weight="bold" text-anchor="middle" fill="#000000">45</text>
+            <circle cx="185" cy="100" r="4" fill="#000000"/><text x="155" y="110" font-size="28" font-weight="bold" text-anchor="middle" fill="#000000">90</text>
+            <circle cx="160" cy="40" r="4" fill="#000000"/><text x="138" y="70" font-size="28" font-weight="bold" text-anchor="middle" fill="#000000">135</text>
+            <circle cx="100" cy="15" r="4" fill="#000000"/><text x="100" y="48" font-size="28" font-weight="bold" text-anchor="middle" fill="#000000">180</text>
+            <circle cx="40" cy="40" r="4" fill="#000000"/><text x="62" y="70" font-size="28" font-weight="bold" text-anchor="middle" fill="#000000">225</text>
+            <circle cx="15" cy="100" r="4" fill="#000000"/><text x="45" y="110" font-size="28" font-weight="bold" text-anchor="middle" fill="#000000">270</text>
+            <circle cx="40" cy="160" r="4" fill="#000000"/><text x="62" y="152" font-size="28" font-weight="bold" text-anchor="middle" fill="#000000">315</text>
+            <line id="pointer-b" x1="100" y1="100" x2="100" y2="185" stroke="#f47321" stroke-width="6" stroke-linecap="round"/>
+            <circle cx="100" cy="100" r="7" fill="#1e293b"/>
+          </svg>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <!-- Footer -->
+  <footer class="max-w-3xl mx-auto w-full mt-4 pt-3 border-t border-slate-300 flex justify-center">
+    <button onclick="openChangelog()" class="bg-slate-700 hover:bg-slate-600 text-white font-semibold px-4 py-2 rounded-xl text-xs shadow transition-colors flex items-center justify-center gap-1.5">
+      📜 Logbuch öffnen
+    </button>
+  </footer>
+
+  <!-- Changelog Modal -->
+  <div id="changelog_modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl p-6 max-w-lg w-full space-y-4 text-slate-800 shadow-2xl max-h-[85vh] flex flex-col">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h3 class="font-bold text-lg text-[#005691]">📜 Projekt-Logbuch</h3>
+        <button onclick="closeChangelog()" class="text-slate-400 hover:text-slate-700 font-bold text-xl px-2">&times;</button>
+      </div>
+      <div id="changelog_list" class="overflow-y-auto space-y-3 pr-1 text-sm text-slate-600 flex-1"></div>
+      <button onclick="closeChangelog()" class="w-full bg-[#005691] hover:bg-[#004070] text-white font-semibold py-2.5 rounded-xl text-sm transition-colors">
+        Schließen
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Logbuch mit neuester Version ganz oben
+    const projectChangelog = [
+      { version: "v0.4.61", date: "12.09.2026, 21:55", text: "Äußere Ring-Umrandung (stroke) der Drehräder auf Schwarz umgestellt.", border: "border-indigo-500" },
+      { version: "v0.4.60", date: "12.09.2026, 21:52", text: "Markierungskreise (Punkte) auf den Drehrädern vollständig auf Schwarz umgestellt.", border: "border-slate-400" },
+      { version: "v0.4.59", date: "12.09.2026, 21:50", text: "Vertikale y-Koordinaten der Gradzahlen auf den Drehrädern präzise zentriert.", border: "border-slate-400" },
+      { version: "v0.4.58", date: "12.09.2026, 21:48", text: "Markierungskreise auf Schwarz umgestellt und Gradzahlen größenmäßig verdoppelt.", border: "border-slate-400" },
+      { version: "v0.4.57", date: "12.09.2026, 21:46", text: "Gradzahlen auf den Drehrädern für verbesserte Lesbarkeit auf Schwarz umgestellt.", border: "border-slate-400" },
+      { version: "v0.4.56", date: "12.09.2026, 21:44", text: "Umschalt-Buttons für Anschluss A nach rechts ausgelagert und übereinander gestapelt für optimierte Höhe.", border: "border-slate-400" },
+      { version: "v0.4.55", date: "12.09.2026, 21:40", text: "Bildgalerie und Live-Wertebox zu einer gemeinsamen Karte verschmolzen; Gradzahlen vertikal unter die Anschluss-Beschriftungen gesetzt.", border: "border-slate-400" },
+      { version: "v0.4.54", date: "12.09.2026, 21:12", text: "Kompletter Header-Bereich entfernt; App startet nun direkt mit der Bildgalerie.", border: "border-slate-400" },
+      { version: "v0.4.53", date: "12.09.2026, 21:10", text: "Seitentitel im <head> dynamisch um den aktuellen Zeitstempel erweitert.", border: "border-slate-400" },
+      { version: "v0.4.52", date: "12.09.2026, 21:05", text: "HTML-Speichern-Button im Footer entfernt und Live-Zeitstempel oben integriert.", border: "border-slate-400" },
+      { version: "v0.4.51", date: "12.09.2026, 20:53", text: "Titel bereinigt und automatischen Zeitstempel-Download integriert.", border: "border-slate-400" },
+      { version: "v0.4.50", date: "12.09.2026, 20:50", text: "Button-Beschriftung auf '45° | 90°' aktualisiert und Live-Werteboxen stabilisiert.", border: "border-slate-400" },
+      { version: "v0.4.49", date: "12.09.2026, 20:40", text: "Benutzeroberfläche horizontal gespiegelt.", border: "border-slate-400" }
+    ];
+
+    function renderChangelog() {
+      const listContainer = document.getElementById('changelog_list');
+      listContainer.innerHTML = '';
+      projectChangelog.forEach(item => {
+        const div = document.createElement('div');
+        div.className = `p-3 bg-slate-50 rounded-xl border-l-4 ${item.border}`;
+        div.innerHTML = `
+          <div class="flex justify-between font-bold text-slate-700 text-xs">
+            <span>Version ${item.version}</span>
+            <span>${item.date}</span>
+          </div>
+          <p class="mt-1">${item.text}</p>
+        `;
+        listContainer.appendChild(div);
+      });
+    }
+
+    // Seitentitel (Tab-Titel) beim Laden mit Zeitstempel belegen
+    window.addEventListener('DOMContentLoaded', () => {
+      const now = new Date();
+      const day = String(now.getDate()).padStart(2, '0');
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const year = now.getFullYear();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      
+      const timeString = `${day}.${month}.${year}, ${hours}:${minutes} Uhr`;
+      document.getElementById('page-title').textContent = `Hydraulikschlauch Verdrehwinkel – ${timeString}`;
+    });
+
+    // Asset-Bibliothek
+    const assets = {
+      'a-0': 'a-0.png',
+      'a-45': 'a-45.png',
+      'a-90': 'a-90.png',
+      'a-135': 'a-135.png',
+      'a-180': 'a-180.png',
+      'a-225': 'a-225.png',
+      'a-270': 'a-270.png',
+      'a-315': 'a-315.png',
+      'a-f': 'a-f.png',
+      'b-0': 'b-0.png',
+      'b-45': 'b-45.png',
+      'b-90': 'b-90.png',
+      'b-135': 'b-135.png',
+      'b-180': 'b-180.png',
+      'b-225': 'b-225.png',
+      'b-270': 'b-270.png',
+      'b-315': 'b-315.png',
+      'b-f': 'b-0.png'
+    };
+
+    let state = {
+      angleA: 0,
+      angleB: 0,
+      isGeradeA: true
+    };
+
+    function updateGallery() {
+      let keyA = state.isGeradeA ? 'a-f' : `a-${state.angleA}`;
+      document.getElementById('img-a').src = assets[keyA] || assets['a-f'];
+
+      let keyB = `b-${state.angleB}`;
+      document.getElementById('img-b').src = assets[keyB] || assets['b-0'];
+    }
+
+    function setAnschlussAType(type) {
+      state.isGeradeA = (type === 'gerade');
+      const dialA = document.getElementById('dial-a');
+      const outA = document.getElementById('out-a');
+      const btnGerade = document.getElementById('type-a-gerade');
+      const btn90 = document.getElementById('type-a-90');
+
+      if (state.isGeradeA) {
+        dialA.style.opacity = '0.4';
+        dialA.style.pointerEvents = 'none';
+        btnGerade.className = 'flex-1 py-1.5 px-2 rounded-lg bg-[#005691] text-white transition-all text-center flex items-center justify-center';
+        btn90.className = 'flex-1 py-1.5 px-2 rounded-lg text-slate-600 hover:text-slate-900 transition-all text-center flex items-center justify-center';
+        outA.textContent = '0°';
+        outA.className = 'text-lg font-extrabold text-slate-400 font-mono w-16 text-center transition-all';
+      } else {
+        dialA.style.opacity = '1';
+        dialA.style.pointerEvents = 'auto';
+        btn90.className = 'flex-1 py-1.5 px-2 rounded-lg bg-[#005691] text-white transition-all text-center flex items-center justify-center';
+        btnGerade.className = 'flex-1 py-1.5 px-2 rounded-lg text-slate-600 hover:text-slate-900 transition-all text-center flex items-center justify-center';
+        outA.textContent = state.angleA + '°';
+        outA.className = 'text-lg font-extrabold text-[#005691] font-mono w-16 text-center transition-all';
+      }
+      updateGallery();
+    }
+
+    function openChangelog() { renderChangelog(); document.getElementById('changelog_modal').classList.remove('hidden'); }
+    function closeChangelog() { document.getElementById('changelog_modal').classList.add('hidden'); }
+
+    const gueltigeWerte = [0, 45, 90, 135, 180, 225, 270, 315];
+
+    function aktualisiereWinkelVisualisierung(anschluss, grad) {
+      const radius = 85;
+      let mappedDeg = (360 - grad + 180) % 360;
+      let rad = (mappedDeg - 90) * (Math.PI / 180);
+
+      const endX = 100 + radius * Math.cos(rad);
+      const endY = 100 + radius * Math.sin(rad);
+
+      if (anschluss === 'a') {
+        state.angleA = grad;
+        if (!state.isGeradeA) document.getElementById('out-a').textContent = grad + '°';
+        let pointer = document.querySelector('#dial-a line');
+        pointer.setAttribute('x2', endX);
+        pointer.setAttribute('y2', endY);
+      } else {
+        state.angleB = grad;
+        document.getElementById('out-b').textContent = grad + '°';
+        let pointer = document.querySelector('#dial-b line');
+        pointer.setAttribute('x2', endX);
+        pointer.setAttribute('y2', endY);
+      }
+      updateGallery();
+    }
+
+    function handleDialInteraction(e, dialElement) {
+      const rect = dialElement.getBoundingClientRect();
+      const clientX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+      const clientY = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+
+      const dx = clientX - centerX;
+      const dy = clientY - centerY;
+
+      let rad = Math.atan2(dy, dx);
+      let deg = rad * (180 / Math.PI);
+      
+      let userDeg = deg + 90;
+      if (userDeg < 0) userDeg += 360;
+      if (userDeg >= 360) userDeg -= 360;
+
+      userDeg = (360 - userDeg + 180) % 360;
+
+      let naechsterSchritt = gueltigeWerte.reduce((prev, curr) => {
+        return (Math.abs(curr - userDeg) < Math.abs(prev - userDeg) ? curr : prev);
+      });
+      
+      if (userDeg >= 337.5 || userDeg < 22.5) {
+        naechsterSchritt = 0;
+      }
+
+      const anschlussTyp = dialElement.dataset.anschluss;
+      aktualisiereWinkelVisualisierung(anschlussTyp, naechsterSchritt);
+    }
+
+    document.querySelectorAll('.dial-wrapper').forEach(dial => {
+      let isDragging = false;
+      dial.addEventListener('pointerdown', (e) => {
+        isDragging = true;
+        dial.setPointerCapture(e.pointerId);
+        handleDialInteraction(e, dial);
+      });
+      dial.addEventListener('pointermove', (e) => {
+        if (!isDragging) return;
+        handleDialInteraction(e, dial);
+      });
+      dial.addEventListener('pointerup', (e) => {
+        isDragging = false;
+        dial.releasePointerCapture(e.pointerId);
+      });
+    });
+
+    setAnschlussAType('gerade');
+    aktualisiereWinkelVisualisierung('a', 0);
+    aktualisiereWinkelVisualisierung('b', 0);
+  </script>
+</body>
+</html>
